@@ -1656,12 +1656,130 @@ function showFinalScore() {
 
 }
 // ======================================
-// // ======================================
 // KATHALENS AI NARRATOR
+// (English / Telugu / Hindi, all via live
+//  text-to-speech — local device voice
+//  first, with an online-voice fallback
+//  when no local Telugu/Hindi voice is
+//  installed. No pre-recorded audio files
+//  are used, so there is nothing to go
+//  missing or get out of sync.)
 // ======================================
 
 let narrationLanguage = "english";
 let currentAudio = null;
+
+// Keeps a live reference to the utterance so some browsers
+// (Chrome in particular) don't garbage-collect it mid-speech.
+let activeMonumentUtterance = null;
+
+// Playback state for the online (no local voice) fallback.
+let monumentOnlineNarrationActive = false;
+let monumentOnlineNarrationQueue = [];
+let monumentOnlineNarrationIndex = 0;
+let monumentOnlineNarrationPlayer = null;
+let monumentOnlineNarrationLangCode = "en";
+
+
+function speechLangCodeForMonument() {
+
+    if (narrationLanguage === "telugu") {
+        return "te-IN";
+    }
+
+    if (narrationLanguage === "hindi") {
+        return "hi-IN";
+    }
+
+    return "en-IN";
+}
+
+
+function playMonumentOnlineNarrationQueue() {
+
+    const status =
+        document.getElementById("narrationStatus");
+
+    if (monumentOnlineNarrationIndex >= monumentOnlineNarrationQueue.length) {
+
+        if (status) {
+            status.innerText = "✅ Narration completed.";
+        }
+
+        monumentOnlineNarrationActive = false;
+        monumentOnlineNarrationPlayer = null;
+        currentAudio = null;
+        return;
+    }
+
+    const chunkText =
+        monumentOnlineNarrationQueue[monumentOnlineNarrationIndex];
+
+    const url =
+        buildOnlineTTSUrl(chunkText, monumentOnlineNarrationLangCode);
+
+    const player = new Audio(url);
+    monumentOnlineNarrationPlayer = player;
+    currentAudio = player;
+
+    player.onended = function () {
+        monumentOnlineNarrationIndex++;
+        playMonumentOnlineNarrationQueue();
+    };
+
+    player.onerror = function (event) {
+
+        console.error(
+            "Monument online narration chunk failed:",
+            event
+        );
+
+        if (status) {
+            status.innerText =
+                "❌ Online narration is unavailable right now " +
+                "(the free voice service may be busy). Please try " +
+                "again shortly, or read the text above.";
+        }
+
+        monumentOnlineNarrationActive = false;
+        monumentOnlineNarrationPlayer = null;
+        currentAudio = null;
+    };
+
+    player.play().catch(function (error) {
+
+        console.error(
+            "Monument online narration playback error:",
+            error
+        );
+
+        if (status) {
+            status.innerText = "❌ Unable to play narration.";
+        }
+
+        monumentOnlineNarrationActive = false;
+        monumentOnlineNarrationPlayer = null;
+        currentAudio = null;
+    });
+}
+
+
+function startMonumentOnlineNarration(text, langCode) {
+
+    const status =
+        document.getElementById("narrationStatus");
+
+    monumentOnlineNarrationActive = true;
+    monumentOnlineNarrationLangCode = langCode;
+    monumentOnlineNarrationQueue = splitTextForOnlineTTS(text);
+    monumentOnlineNarrationIndex = 0;
+
+    if (status) {
+        status.innerText = "🔊 Narrating (online voice)...";
+    }
+
+    playMonumentOnlineNarrationQueue();
+}
 
 
 // ======================================
@@ -1673,105 +1791,14 @@ function startNarration() {
     // Stop any item narrator that might be playing
     stopItemNarration();
 
-    // Stop any currently playing audio or speech
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-    }
-
-    window.speechSynthesis.cancel();
+    // Stop previous audio / speech
+    stopNarration();
 
     // Check if monument is selected
     if (!currentMonument) {
         alert("Please select a monument first.");
         return;
     }
-
-    // Stop previous audio
-    stopNarration();
-
-    // ==================================
-    // TELUGU / HINDI AUDIO FILES
-    // ==================================
-
-    if (narrationLanguage === "telugu" ||
-        narrationLanguage === "hindi") {
-
-        const languageCode =
-            narrationLanguage === "telugu" ? "te" : "hi";
-
-        const audioPath =
-            `audio/${currentMonument}-${languageCode}.mp3`;
-
-        console.log("Audio file:", audioPath);
-
-        currentAudio = new Audio(audioPath);
-
-        const status =
-            document.getElementById("narrationStatus");
-
-        if (status) {
-            status.innerText = "🔊 Narrating...";
-        }
-
-        currentAudio.onerror = function () {
-
-            console.error(
-                "Audio file could not be loaded:",
-                audioPath
-            );
-
-            if (status) {
-                status.innerText =
-                    "❌ Audio file not found.";
-            }
-
-            alert(
-                "Audio file not found:\n\n" +
-                audioPath
-            );
-        };
-
-        currentAudio.onended = function () {
-
-            if (status) {
-                status.innerText =
-                    "✅ Narration completed.";
-            }
-
-            currentAudio = null;
-        };
-
-        currentAudio.play()
-            .then(function () {
-
-                console.log(
-                    "Playing:",
-                    audioPath
-                );
-
-            })
-            .catch(function (error) {
-
-                console.error(
-                    "Audio playback error:",
-                    error
-                );
-
-                if (status) {
-                    status.innerText =
-                        "❌ Unable to play narration.";
-                }
-            });
-
-        return;
-    }
-
-
-    // ==================================
-    // ENGLISH NARRATION
-    // ==================================
 
     const monumentData =
         languageData[currentMonument];
@@ -1782,61 +1809,96 @@ function startNarration() {
     }
 
     const selectedLanguage =
-        monumentData.english;
+        monumentData[narrationLanguage];
 
-    if (!selectedLanguage) {
-        alert("English story is not available.");
+    if (!selectedLanguage || !selectedLanguage.text) {
+
+        alert(
+            narrationLanguage === "telugu" ?
+                "Telugu story is not available for this monument." :
+            narrationLanguage === "hindi" ?
+                "Hindi story is not available for this monument." :
+                "English story is not available."
+        );
+
         return;
     }
 
-    const story =
-        selectedLanguage.text;
-
-    if (!story) {
-        alert("No story available.");
-        return;
-    }
-
-    const speech =
-        new SpeechSynthesisUtterance(story);
-
-    speech.lang = "en-IN";
-    speech.rate = 0.9;
-    speech.pitch = 1;
-    speech.volume = 1;
+    const story = selectedLanguage.text;
 
     const status =
         document.getElementById("narrationStatus");
 
     if (status) {
-        status.innerText =
-            "🔊 Narrating...";
+        status.innerText = "⏳ Loading voice...";
     }
 
-    speech.onerror = function (event) {
+    const langCode = speechLangCodeForMonument();
 
-        console.error(
-            "Speech error:",
-            event
-        );
+    loadSpeechVoices().then(function () {
+
+        const voice = findVoiceForLangCode(langCode);
+        const isIndianLanguage =
+            narrationLanguage === "telugu" ||
+            narrationLanguage === "hindi";
+
+        if (isIndianLanguage && !voice) {
+
+            console.warn(
+                "No local voice found for", langCode,
+                "- falling back to online narration for monument. " +
+                "Installed voices:", cachedVoiceList
+            );
+
+            startMonumentOnlineNarration(story, langCode);
+            return;
+        }
+
+        const speech =
+            new SpeechSynthesisUtterance(story);
+
+        speech.lang = langCode;
+
+        if (voice) {
+            speech.voice = voice;
+        }
+
+        speech.rate = 0.9;
+        speech.pitch = 1;
+        speech.volume = 1;
+
+        activeMonumentUtterance = speech;
+
+        speech.onerror = function (event) {
+
+            console.error(
+                "Monument speech error:",
+                event
+            );
+
+            if (status) {
+                status.innerText =
+                    "❌ Voice generation failed on this device.";
+            }
+        };
+
+        speech.onend = function () {
+
+            if (status) {
+                status.innerText =
+                    "✅ Narration completed.";
+            }
+
+            activeMonumentUtterance = null;
+        };
 
         if (status) {
-            status.innerText =
-                "❌ Voice generation failed.";
+            status.innerText = "🔊 Narrating...";
         }
-    };
 
-    speech.onend = function () {
+        window.speechSynthesis.speak(speech);
 
-        if (status) {
-            status.innerText =
-                "✅ Narration completed.";
-        }
-    };
-
-    window.speechSynthesis.cancel();
-
-    window.speechSynthesis.speak(speech);
+    });
 
 }
 
@@ -1847,10 +1909,9 @@ function startNarration() {
 
 function pauseNarration() {
 
-    // Pause MP3
-    if (currentAudio) {
+    if (monumentOnlineNarrationActive && monumentOnlineNarrationPlayer) {
 
-        currentAudio.pause();
+        monumentOnlineNarrationPlayer.pause();
 
         document.getElementById(
             "narrationStatus"
@@ -1860,7 +1921,6 @@ function pauseNarration() {
         return;
     }
 
-    // Pause English speech
     window.speechSynthesis.pause();
 
     document.getElementById(
@@ -1876,10 +1936,9 @@ function pauseNarration() {
 
 function resumeNarration() {
 
-    // Resume MP3
-    if (currentAudio) {
+    if (monumentOnlineNarrationActive && monumentOnlineNarrationPlayer) {
 
-        currentAudio.play();
+        monumentOnlineNarrationPlayer.play();
 
         document.getElementById(
             "narrationStatus"
@@ -1889,7 +1948,6 @@ function resumeNarration() {
         return;
     }
 
-    // Resume English speech
     window.speechSynthesis.resume();
 
     document.getElementById(
@@ -1905,16 +1963,19 @@ function resumeNarration() {
 
 function stopNarration() {
 
-    // Stop MP3
-    if (currentAudio) {
+    window.speechSynthesis.cancel();
+    activeMonumentUtterance = null;
 
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
+    if (monumentOnlineNarrationPlayer) {
+        monumentOnlineNarrationPlayer.pause();
+        monumentOnlineNarrationPlayer.currentTime = 0;
     }
 
-    // Stop English speech
-    window.speechSynthesis.cancel();
+    monumentOnlineNarrationActive = false;
+    monumentOnlineNarrationPlayer = null;
+    monumentOnlineNarrationQueue = [];
+    monumentOnlineNarrationIndex = 0;
+    currentAudio = null;
 
     const status =
         document.getElementById("narrationStatus");
@@ -1928,10 +1989,9 @@ function stopNarration() {
 // ======================================
 // STATE HERITAGE NARRATION
 // (English / Telugu / Hindi via the
-//  browser's own text-to-speech voice —
-//  the state overview text is generated
-//  on the fly, so there are no pre-recorded
-//  audio files for it like the monuments)
+//  browser's own text-to-speech voice,
+//  same local-voice-first, online-fallback
+//  approach as the monument narrator above)
 // ======================================
 
 function speechLangCodeForState() {
@@ -2045,25 +2105,7 @@ function findVoiceForLangCode(langCode) {
    a guaranteed production service.
 ===================================================== */
 
-// Google's translate_tts endpoint limits the q= parameter by
-// BYTES, not characters. Telugu/Hindi characters take ~3 bytes
-// each in UTF-8, so a 180-character Telugu chunk can be 500+
-// bytes and gets silently rejected (the <audio> element then
-// reports "no supported source found"). We measure real UTF-8
-// byte length so every script gets chunked safely.
-const ONLINE_TTS_BYTE_LIMIT = 150;
-
-function utf8ByteLength(str) {
-    if (window.TextEncoder) {
-        return new TextEncoder().encode(str).length;
-    }
-    // Fallback: approximate via encodeURIComponent.
-    return encodeURIComponent(str).replace(/%[0-9A-F]{2}/g, "x").length;
-}
-
-function fitsOnlineTTSChunk(str) {
-    return utf8ByteLength(str) <= ONLINE_TTS_BYTE_LIMIT;
-}
+const ONLINE_TTS_CHUNK_LIMIT = 180;
 
 function splitTextForOnlineTTS(text) {
 
@@ -2085,7 +2127,7 @@ function splitTextForOnlineTTS(text) {
 
         const combined = (current + " " + sentence).trim();
 
-        if (fitsOnlineTTSChunk(combined)) {
+        if (combined.length <= ONLINE_TTS_CHUNK_LIMIT) {
             current = combined;
             return;
         }
@@ -2094,7 +2136,7 @@ function splitTextForOnlineTTS(text) {
             chunks.push(current);
         }
 
-        if (fitsOnlineTTSChunk(sentence)) {
+        if (sentence.length <= ONLINE_TTS_CHUNK_LIMIT) {
             current = sentence;
             return;
         }
@@ -2106,15 +2148,11 @@ function splitTextForOnlineTTS(text) {
 
             const withWord = (piece + " " + word).trim();
 
-            if (fitsOnlineTTSChunk(withWord)) {
+            if (withWord.length <= ONLINE_TTS_CHUNK_LIMIT) {
                 piece = withWord;
             } else {
-                if (piece) {
-                    chunks.push(piece);
-                }
-                // Guard against a single word alone exceeding the
-                // limit (rare, but avoids an infinite/empty chunk).
-                piece = fitsOnlineTTSChunk(word) ? word : word.slice(0, 20);
+                chunks.push(piece);
+                piece = word;
             }
         });
 
