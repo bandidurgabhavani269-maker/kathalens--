@@ -1,0 +1,29 @@
+ {
+  "name": "kathalens",
+  "version": "1.0.0",
+  "description": "KathaLens Heritage & Culture App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "KathaLens",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "build": {
+    "appId": "com.kathalens.app",
+    "productName": "KathaLens",
+    "win": {
+      "target": "nsis",
+      "icon": "kathalens-icon.ico"
+    }
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^7.0.0"
+  }
+}
