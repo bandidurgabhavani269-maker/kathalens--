@@ -2045,7 +2045,25 @@ function findVoiceForLangCode(langCode) {
    a guaranteed production service.
 ===================================================== */
 
-const ONLINE_TTS_CHUNK_LIMIT = 180;
+// Google's translate_tts endpoint limits the q= parameter by
+// BYTES, not characters. Telugu/Hindi characters take ~3 bytes
+// each in UTF-8, so a 180-character Telugu chunk can be 500+
+// bytes and gets silently rejected (the <audio> element then
+// reports "no supported source found"). We measure real UTF-8
+// byte length so every script gets chunked safely.
+const ONLINE_TTS_BYTE_LIMIT = 150;
+
+function utf8ByteLength(str) {
+    if (window.TextEncoder) {
+        return new TextEncoder().encode(str).length;
+    }
+    // Fallback: approximate via encodeURIComponent.
+    return encodeURIComponent(str).replace(/%[0-9A-F]{2}/g, "x").length;
+}
+
+function fitsOnlineTTSChunk(str) {
+    return utf8ByteLength(str) <= ONLINE_TTS_BYTE_LIMIT;
+}
 
 function splitTextForOnlineTTS(text) {
 
@@ -2067,7 +2085,7 @@ function splitTextForOnlineTTS(text) {
 
         const combined = (current + " " + sentence).trim();
 
-        if (combined.length <= ONLINE_TTS_CHUNK_LIMIT) {
+        if (fitsOnlineTTSChunk(combined)) {
             current = combined;
             return;
         }
@@ -2076,7 +2094,7 @@ function splitTextForOnlineTTS(text) {
             chunks.push(current);
         }
 
-        if (sentence.length <= ONLINE_TTS_CHUNK_LIMIT) {
+        if (fitsOnlineTTSChunk(sentence)) {
             current = sentence;
             return;
         }
@@ -2088,11 +2106,15 @@ function splitTextForOnlineTTS(text) {
 
             const withWord = (piece + " " + word).trim();
 
-            if (withWord.length <= ONLINE_TTS_CHUNK_LIMIT) {
+            if (fitsOnlineTTSChunk(withWord)) {
                 piece = withWord;
             } else {
-                chunks.push(piece);
-                piece = word;
+                if (piece) {
+                    chunks.push(piece);
+                }
+                // Guard against a single word alone exceeding the
+                // limit (rare, but avoids an infinite/empty chunk).
+                piece = fitsOnlineTTSChunk(word) ? word : word.slice(0, 20);
             }
         });
 
