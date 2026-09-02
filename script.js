@@ -4886,7 +4886,7 @@ const itemDetailTranslations = {
             nutrients:
                 "आलू कार्बोहाइड्रेट और पोटैशियम प्रदान करते हैं। हल्के तड़के के कारण इसमें अतिरिक्त वसा कम रहती है।"
         }
-    }
+    },
 
     "Karnataka|food|Mysore Pak": {
         telugu: {
