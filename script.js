@@ -8182,7 +8182,7 @@ function showStateCategory(category) {
                     ${categoryNamesMulti[category][currentStateLanguage]}
                 </span>
 
-                <h3>${item}</h3>
+                <h3>${translateItem(item, currentStateLanguage)}</h3>
 
                 <p>
                     <strong>📍 State:</strong>
