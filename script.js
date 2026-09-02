@@ -1,6 +1,8 @@
 function explore() {
 
-    alert("Welcome to KathaLens! 🏛️");
+    document
+        .getElementById("stateExplorer")
+        .scrollIntoView({ behavior: "auto", block: "start" });
 
 }
 const heritageData = {
