@@ -7548,12 +7548,17 @@ html += `
             `;
         }
 
-        return `
-            <div class="item-extra item-extra-pending" id="itemExtra-${uid}">
-                <p><em>📋 Recipe and nutrition details for ${item} are being added soon.</em></p>
-            </div>
-        `;
-    }
+       const pendingFoodText = {
+    english: `📋 Recipe and nutrition details for ${translateItem(item, "english")} are being added soon.`,
+    telugu: `📋 ${translateItem(item, "telugu")} యొక్క వంటకం మరియు పోషక వివరాలు త్వరలో అందుబాటులోకి వస్తాయి.`,
+    hindi: `📋 ${translateItem(item, "hindi")} की रेसिपी और पोषण संबंधी जानकारी जल्द ही उपलब्ध होगी।`
+};
+
+return `
+    <div class="item-extra item-extra-pending" id="itemExtra-${uid}">
+        <p><em>${pendingFoodText[lang] || pendingFoodText.english}</em></p>
+    </div>
+`;
 
     const labelByCategory = {
         dance: "🕺 How this dance form began",
