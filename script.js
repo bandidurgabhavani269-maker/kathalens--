@@ -7510,92 +7510,115 @@ function getItemDetailHTML(state, category, item) {
         </div>
     `;
 
-    if (category === "food") {
+  if (category === "food") {
 
-        if (localized && localized.data && localized.data.recipe) {
+    // food translation code here
 
-            const pendingNote =
-                !localized.isTranslated ?
-                    pendingTranslationNote(lang) : "";
-
-            return `
-                <div class="item-extra" id="itemExtra-${uid}">
-                    const foodLabels = {
-    english: {
-        made: "👩‍🍳 How it's made:",
-        nutrition: "🥗 Nutrition:"
-    },
-    telugu: {
-        made: "👩‍🍳 తయారీ విధానం:",
-        nutrition: "🥗 పోషక విలువలు:"
-    },
-    hindi: {
-        made: "👩‍🍳 बनाने की विधि:",
-        nutrition: "🥗 पोषण:"
-    }
-};
-
-const labels = foodLabels[lang] || foodLabels.english;
-
-html += `
-    <p><strong>${labels.made}</strong> ${localized.data.recipe}</p>
-    <p><strong>${labels.nutrition}</strong> ${localized.data.nutrients}</p>
-`;
-                    ${pendingNote}
-                    ${langButtonsHTML}
-                    ${narratorHTML}
-                </div>
-            `;
-        }
-
-       const pendingFoodText = {
-    english: `📋 Recipe and nutrition details for ${translateItem(item, "english")} are being added soon.`,
-    telugu: `📋 ${translateItem(item, "telugu")} యొక్క వంటకం మరియు పోషక వివరాలు త్వరలో అందుబాటులోకి వస్తాయి.`,
-    hindi: `📋 ${translateItem(item, "hindi")} की रेसिपी और पोषण संबंधी जानकारी जल्द ही उपलब्ध होगी।`
-};
-
-return `
-    <div class="item-extra item-extra-pending" id="itemExtra-${uid}">
-        <p><em>${pendingFoodText[lang] || pendingFoodText.english}</em></p>
-    </div>
-`;
-
-    const labelByCategory = {
-        dance: "🕺 How this dance form began",
-        arts: "🎨 History of this craft",
-        dress: "🧵 History of this garment",
-        festival: "🎉 Why it's celebrated",
-        places: "🏛️ History of this place"
-    };
-
-    const label = labelByCategory[category];
-
-    if (!label) {
-        return "";
-    }
-
-    if (localized) {
+    if (localized && localized.data && localized.data.recipe) {
 
         const pendingNote =
-            !localized.isTranslated ?
-                pendingTranslationNote(lang) : "";
+            !localized.isTranslated
+                ? pendingTranslationNote(lang)
+                : "";
+
+        const foodLabels = {
+            english: {
+                made: "👩‍🍳 How it's made:",
+                nutrition: "🥗 Nutrition:"
+            },
+            telugu: {
+                made: "👩‍🍳 తయారీ విధానం:",
+                nutrition: "🥗 పోషక విలువలు:"
+            },
+            hindi: {
+                made: "👩‍🍳 बनाने की विधि:",
+                nutrition: "🥗 पोषण:"
+            }
+        };
+
+        const labels =
+            foodLabels[lang] || foodLabels.english;
 
         return `
             <div class="item-extra" id="itemExtra-${uid}">
-                <p><strong>${label}:</strong> ${localized.data}</p>
+
+                <p>
+                    <strong>${labels.made}</strong>
+                    ${localized.data.recipe}
+                </p>
+
+                <p>
+                    <strong>${labels.nutrition}</strong>
+                    ${localized.data.nutrients}
+                </p>
+
                 ${pendingNote}
                 ${langButtonsHTML}
                 ${narratorHTML}
+
             </div>
         `;
     }
 
+    const pendingFoodText = {
+        english: `📋 Recipe and nutrition details for ${translateItem(item, "english")} are being added soon.`,
+        telugu: `📋 ${translateItem(item, "telugu")} యొక్క వంటకం మరియు పోషక వివరాలు త్వరలో అందుబాటులోకి వస్తాయి.`,
+        hindi: `📋 ${translateItem(item, "hindi")} की रेसिपी और पोषण संबंधी जानकारी जल्द ही उपलब्ध होगी।`
+    };
+
     return `
         <div class="item-extra item-extra-pending" id="itemExtra-${uid}">
-            <p><em>📋 The story behind ${item} is being added soon.</em></p>
+            <p>
+                <em>${pendingFoodText[lang] || pendingFoodText.english}</em>
+            </p>
+        </div>
+    `;
+}   // ⭐ CLOSE FOOD BLOCK HERE
+
+
+// ⭐ YOUR CODE STARTS HERE
+const labelByCategory = {
+    dance: "🕺 How this dance form began",
+    arts: "🎨 History of this craft",
+    dress: "🧵 History of this garment",
+    festival: "🎉 Why it's celebrated",
+    places: "🏛️ History of this place"
+};
+
+const label = labelByCategory[category];
+
+if (!label) {
+    return "";
+}
+
+if (localized) {
+
+    const pendingNote =
+        !localized.isTranslated
+            ? pendingTranslationNote(lang)
+            : "";
+
+    return `
+        <div class="item-extra" id="itemExtra-${uid}">
+            <p>
+                <strong>${label}:</strong>
+                ${localized.data}
+            </p>
+
+            ${pendingNote}
+            ${langButtonsHTML}
+            ${narratorHTML}
         </div>
     `;
 }
+
+return `
+    <div class="item-extra item-extra-pending" id="itemExtra-${uid}">
+        <p>
+            <em>📋 The story behind ${item} is being added soon.</em>
+        </p>
+    </div>
+`;
 
 
 /*
