@@ -291,51 +291,7 @@ const heritageData = {
 // IMAGE UPLOAD
 // ============================
 
-const imageInput =
-    document.getElementById("imageInput");
 
-
-imageInput.addEventListener(
-    "change",
-    function () {
-
-        const file =
-            imageInput.files[0];
-
-        if (file) {
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                function (event) {
-
-                    const preview =
-                        document.getElementById(
-                            "preview"
-                        );
-
-                    preview.src =
-                        event.target.result;
-
-
-                    document
-                        .getElementById(
-                            "previewContainer"
-                        )
-                        .style.display =
-                        "block";
-
-                };
-
-
-            reader.readAsDataURL(file);
-
-        }
-
-    }
-);
 
 
 // ============================
