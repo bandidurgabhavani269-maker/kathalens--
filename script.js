@@ -7520,8 +7520,27 @@ function getItemDetailHTML(state, category, item) {
 
             return `
                 <div class="item-extra" id="itemExtra-${uid}">
-                    <p><strong>👩‍🍳 How it's made:</strong> ${localized.data.recipe}</p>
-                    <p><strong>🥗 Nutrition:</strong> ${localized.data.nutrients}</p>
+                    const foodLabels = {
+    english: {
+        made: "👩‍🍳 How it's made:",
+        nutrition: "🥗 Nutrition:"
+    },
+    telugu: {
+        made: "👩‍🍳 తయారీ విధానం:",
+        nutrition: "🥗 పోషక విలువలు:"
+    },
+    hindi: {
+        made: "👩‍🍳 बनाने की विधि:",
+        nutrition: "🥗 पोषण:"
+    }
+};
+
+const labels = foodLabels[lang] || foodLabels.english;
+
+html += `
+    <p><strong>${labels.made}</strong> ${localized.data.recipe}</p>
+    <p><strong>${labels.nutrition}</strong> ${localized.data.nutrients}</p>
+`;
                     ${pendingNote}
                     ${langButtonsHTML}
                     ${narratorHTML}
