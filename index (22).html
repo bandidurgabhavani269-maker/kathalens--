@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>KathaLens</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="home">
+
+        <h1>🏛️ KathaLens</h1>
+
+        <h2>
+            See the Story. Relive the Heritage.
+        </h2>
+
+        <p>
+            Discover India's historical monuments
+            using AI.
+        </p>
+
+        <button onclick="explore()">
+            📸 Explore Heritage
+        </button>
+
+    </div>
+    
+
+<!-- ==========================================
+     🇮🇳 STATE-WISE HERITAGE EXPLORER
+========================================== -->
+
+<section id="stateExplorer" class="state-explorer">
+
+    <div class="state-header">
+        <h2>🇮🇳 Explore India's Heritage</h2>
+
+        <p>
+            Choose an Indian state and discover its
+            traditional dress, dance, arts, food,
+            festivals, culture and famous places.
+        </p>
+    </div>
+
+    <!-- STATE SELECTION -->
+
+    <div class="state-selector">
+
+        <label for="stateSelect">
+            🗺️ Choose a State
+        </label>
+
+        <select id="stateSelect">
+            <option value="">
+                -- Select an Indian State --
+            </option>
+        </select>
+
+    </div>
+
+
+    <!-- CATEGORY BUTTONS -->
+
+    <div
+        id="categoryButtons"
+        class="category-buttons"
+        style="display:none;"
+    >
+
+        <button onclick="showStateCategory('dress')">
+            👗 Dress
+        </button>
+
+        <button onclick="showStateCategory('dance')">
+            💃 Dance
+        </button>
+
+        <button onclick="showStateCategory('arts')">
+            🎨 Arts & Crafts
+        </button>
+
+        <button onclick="showStateCategory('food')">
+            🍛 Food
+        </button>
+
+        <button onclick="showStateCategory('festival')">
+            🎉 Festivals
+        </button>
+
+        <button onclick="showStateCategory('places')">
+            🏛️ Famous Places
+        </button>
+
+        <button onclick="showStateCategory('culture')">
+            🧑‍🤝‍🧑 Culture
+        </button>
+
+    </div>
+
+
+    <!-- STATE INFORMATION -->
+
+    <div
+        id="stateInfo"
+        class="state-info"
+        style="display:none;"
+    >
+
+        <h2 id="selectedStateTitle">
+            Select a state
+        </h2>
+
+        <p id="selectedCategoryTitle">
+            Select a category
+        </p>
+
+        <p id="stateCategoryDescription" class="state-category-desc"></p>
+
+    </div>
+
+    <!-- ==========================================
+         THEME (CATEGORY) AI NARRATOR
+    ========================================== -->
+
+    <div class="state-narrator" id="themeNarrator" style="display:none;">
+
+        <h3 id="themeNarratorTitle">🤖 Listen to this Theme</h3>
+
+        <p id="themeNarratorSubtitle">
+            🎧 Listen to this theme's heritage description in your selected language.
+        </p>
+
+        <button onclick="startThemeNarration()">
+            🔊 Listen to Theme
+        </button>
+
+        <button onclick="pauseThemeNarration()">
+            ⏸️ Pause
+        </button>
+
+        <button onclick="resumeThemeNarration()">
+            ▶️ Resume
+        </button>
+
+        <button onclick="stopThemeNarration()">
+            ⏹️ Stop
+        </button>
+
+        <p id="themeNarrationStatus">
+            Ready to narrate.
+        </p>
+
+    </div>
+
+    <!-- ALL THEMES DESCRIPTION (English + Telugu + Hindi together) -->
+
+    <div
+        id="allThemesBox"
+        class="all-themes-box"
+        style="display:none;"
+    >
+    </div>
+    <!-- ==========================================
+     STATE DESCRIPTION LANGUAGE
+========================================== -->
+
+<div class="state-language-section">
+
+    <h3>🗣️ Choose Description Language</h3>
+
+    <button id="stateLangBtn-english" class="state-lang-btn active" onclick="changeStateLanguage('english')">
+        🇬🇧 English
+    </button>
+
+    <button id="stateLangBtn-telugu" class="state-lang-btn" onclick="changeStateLanguage('telugu')">
+        🇮🇳 తెలుగు
+    </button>
+
+    <button id="stateLangBtn-hindi" class="state-lang-btn" onclick="changeStateLanguage('hindi')">
+        🇮🇳 हिंदी
+    </button>
+
+</div>
+
+<!-- ==========================================
+     STATE HERITAGE AI NARRATOR
+========================================== -->
+
+<div class="state-narrator" id="stateNarrator" style="display:none;">
+
+    <h3 id="stateNarratorTitle">🤖 Listen to State Heritage</h3>
+
+    <p id="stateNarratorSubtitle">
+        🎧 Listen to the heritage overview in your selected language.
+    </p>
+
+    <button onclick="startStateNarration()">
+        🔊 Listen to Story
+    </button>
+
+    <button onclick="pauseStateNarration()">
+        ⏸️ Pause
+    </button>
+
+    <button onclick="resumeStateNarration()">
+        ▶️ Resume
+    </button>
+
+    <button onclick="stopStateNarration()">
+        ⏹️ Stop
+    </button>
+
+    <p id="stateNarrationStatus">
+        Ready to narrate.
+    </p>
+
+</div>
+
+
+    <!-- HERITAGE CARDS -->
+
+    <div
+        id="stateCards"
+        class="state-cards"
+    >
+
+        <div class="state-welcome">
+
+            <div class="india-icon">
+                🇮🇳
+            </div>
+
+            <h2>
+                Discover India's Cultural Diversity
+            </h2>
+
+            <p>
+                Select a state above to explore
+                its unique heritage.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==============================
+     DEMO MODE
+============================== -->
+
+<section class="demo-section">
+
+    <h2>🧪 Try KathaLens Demo</h2>
+
+    <p>
+        Choose a monument to explore its heritage.
+    </p>
+
+    <div class="monument-buttons">
+
+        <button onclick="showMonument('charminar')">
+            🕌 Charminar
+        </button>
+
+        <button onclick="showMonument('ramappa')">
+            🛕 Ramappa Temple
+        </button>
+
+        <button onclick="showMonument('golconda')">
+            🏰 Golconda Fort
+        </button>
+
+        <button onclick="showMonument('hampi')">
+            🛕 Hampi
+        </button>
+
+        <button onclick="showMonument('konark')">
+            ☀️ Konark Sun Temple
+        </button>
+        <button onclick="showMonument('dholavira')">
+    🏺 Dholavira – Gujarat
+</button>
+
+<button onclick="showMonument('nalanda')">
+    🎓 Nalanda Mahavihara – Bihar
+</button>
+
+<button onclick="showMonument('ajanta')">
+    🏛️ Ajanta Caves – Maharashtra
+</button>
+
+<button onclick="showMonument('raniKiVav')">
+    🪜 Rani ki Vav – Gujarat
+</button>
+
+<button onclick="showMonument('lepakshi')">
+    🛕 Lepakshi – Andhra Pradesh
+</button>
+
+<button onclick="showMonument('chausathYogini')">
+    🛕 Chausath Yogini Temple – Madhya Pradesh
+</button>
+
+<button onclick="showMonument('gingeeFort')">
+    🏰 Gingee Fort – Tamil Nadu
+</button>
+
+    </div>
+</section>
+
+
+
+<!-- ==============================
+     MONUMENT RESULT (AI Analysis)
+============================== -->
+
+<section
+    id="monumentResult"
+    class="monument-result"
+>
+
+    <h2>🏛️ Heritage Information</h2>
+
+    <div id="monumentContent">
+
+        <p>
+            Choose a monument above to explore it.
+        </p>
+
+    </div>
+
+</section>
+
+<div class="language-section">
+
+    <h2>🗣️ Choose Language</h2>
+
+    <button onclick="changeLanguage('english')">
+        English
+    </button>
+
+    <button onclick="changeLanguage('telugu')">
+        తెలుగు
+    </button>
+
+    <button onclick="changeLanguage('hindi')">
+        हिंदी
+    </button>
+
+</div>
+<div class="language-result">
+
+    <h2 id="languageHistoryTitle">
+        History
+    </h2>
+
+    <p id="languageHistoryText">
+        Select a language to view the history.
+    </p>
+
+</div>
+<!-- KathaLens AI Narrator -->
+
+<div class="ai-narrator">
+
+    <h2>🤖 KathaLens AI Narrator</h2>
+
+    <p>
+        🎧 Listen to the heritage story
+        in your selected language.
+    </p>
+
+    <button onclick="startNarration()">
+        🔊 Listen to Story
+    </button>
+
+    <button onclick="pauseNarration()">
+        ⏸️ Pause
+    </button>
+
+    <button onclick="resumeNarration()">
+        ▶️ Resume
+    </button>
+
+    <button onclick="stopNarration()">
+        ⏹️ Stop
+    </button>
+
+    <p id="narrationStatus">
+        Ready to narrate.
+    </p>
+
+</div>
+<!-- =================================
+     SEE THE PAST
+================================= -->
+
+<section id="pastSection">
+
+    <h2>🔥 See the Past</h2>
+
+    <p>
+        Explore an AI-generated historical
+        reconstruction concept.
+    </p>
+
+    <div class="past-container">
+
+        <div>
+
+            <h3>📸 Current</h3>
+
+            <img
+                id="currentImage"
+                src=""
+                alt="Current Monument"
+            >
+
+        </div>
+
+
+        <div class="arrow">
+
+            ➡️
+
+        </div>
+
+
+        <div>
+
+            <h3>🏛️ Historical Concept</h3>
+
+            <img
+                id="pastImage"
+                src=""
+                alt="Historical Reconstruction"
+            >
+
+        </div>
+
+    </div>
+
+
+    <p class="disclaimer">
+
+        ⚠️ AI-generated historical reconstruction
+        concept. This visualization is interpretive
+        and is not a historically verified photograph.
+
+    </p>
+
+</section>
+<!-- =================================
+     HERITAGE QUIZ
+================================= -->
+
+<section id="quizSection">
+
+    <h2>🎮 Heritage Challenge</h2>
+
+    <p>
+        Test your knowledge of Indian heritage!
+    </p>
+
+    <div id="quizContent">
+
+        <button onclick="startQuiz()">
+            🚀 Start Quiz
+        </button>
+
+    </div>
+
+</section>
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+<script src="script.js"></script>
+</body>
+</html>
